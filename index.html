@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wedding Seating Chart</title>
+  <style>
+    :root {
+      --cream:   #fafaf7;
+      --sage:    #7a9e7e;
+      --sage-lt: #b5ceb8;
+      --sage-dk: #4e7352;
+      --gold:    #c9a84c;
+      --text:    #2d2d2d;
+      --muted:   #6b6b6b;
+      --border:  #dde8dd;
+      --red:     #c0392b;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Georgia', serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      width: 100%;
+      background: white;
+      border-bottom: 2px solid var(--border);
+      padding: 2.5rem 1rem 2rem;
+      text-align: center;
+    }
+
+    header .names {
+      font-family: "Kuenstler Schreibschrift BQ", cursive;
+      font-size: clamp(3.3rem, 6vw, 4.7rem);
+      color: var(--sage-dk);
+      font-style: italic;
+      letter-spacing: 0.03em;
+    }
+
+    header .ampersand { color: var(--gold); font-size: 1.15em; }
+
+    header .date-line {
+      margin-top: 0.4rem;
+      font-size: 0.95rem;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-family: "Cormorant", serif; font-weight: 600;
+    }
+
+    main {
+      width: 100%;
+      max-width: 560px;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+
+    .search-wrap { position: relative; margin-bottom: 0.75rem; }
+
+    #search {
+      width: 100%;
+      padding: 0.9rem 3rem 0.9rem 1.25rem;
+      font-size: 1.05rem;
+      font-family: "Montserrat", sans-serif; font-weight: 600;
+      border: 2px solid var(--sage-lt);
+      border-radius: 8px;
+      background: white;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    #search:focus { border-color: var(--sage); }
+    #search::placeholder { color: #aaa; }
+
+    .clear-btn {
+      position: absolute;
+      right: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      color: var(--muted);
+      display: none;
+      line-height: 1;
+      padding: 0.25rem;
+    }
+    .clear-btn.visible { display: block; }
+
+    .hint {
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-family: "Montserrat", sans-serif; font-weight: 600;
+      margin-bottom: 1.75rem;
+    }
+
+    #results { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .result-card {
+      background: white;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      animation: fadeIn 0.18s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-name { font-size: 1.05rem; color: var(--text); }
+
+    .result-name em {
+      background: var(--sage-lt);
+      font-style: normal;
+      border-radius: 2px;
+      padding: 0 1px;
+    }
+
+    .result-table {
+      flex-shrink: 0;
+      background: var(--sage);
+      color: white;
+      border-radius: 8px;
+      padding: 0.35rem 0.85rem;
+      font-family: "Montserrat", sans-serif; font-weight: 600;
+      font-size: 0.82rem;
+      letter-spacing: 0.06em;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .result-table strong {
+      display: block;
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .no-result {
+      text-align: center;
+      color: var(--muted);
+      font-family: "Montserrat", sans-serif; font-weight: 600;
+      font-size: 0.95rem;
+      padding: 2rem 0;
+    }
+
+    footer {
+      margin-top: auto;
+      padding: 1rem;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--sage-lt);
+      font-family: "Cormorant", serif; font-weight: 600;
+    }
+
+    /* ── Admin panel ─────────────────────────────────────── */
+    #admin-toggle {
+      position: fixed;
+      bottom: 1.25rem;
+      right: 1.25rem;
+      background: var(--sage-dk);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 2.6rem;
+      height: 2.6rem;
+      font-size: 1.1rem;
+      cursor: pointer;
+      opacity: 0.45;
+      transition: opacity 0.2s;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #admin-toggle:hover { opacity: 1; }
+
+    #admin-panel {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    #admin-panel.open { display: flex; }
+
+    .admin-box {
+      background: white;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 640px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.22);
+    }
+
+    .admin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-bottom: 1.5px solid var(--border);
+    }
+
+    .admin-header h2 {
+      font-size: 1rem;
+      font-family: "Montserrat", sans-serif; font-weight: 600;
+      color: var(--sage-dk);
+      font-weight: 600;
+    }
+
+    .admin-close {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: var(--muted);
+      line-height: 1;
+    }
+
+    .admin-body {
+      overflow-y: auto;
+      padding: 1rem 1.25rem;
+      flex: 1;
+    }
+
+    /* Add form */
+    .add-form {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .add-form input {
+      font-family: "Montserrat", sans-serif; font-weight: 600;
+      font-size: 0.9rem;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      padding: 0.5rem 0.75rem;
+      outline: none;
+      color: var(--text);
+      transition: border-color 0.2s;
+    }
+    .add-form input:focus { border-color: var(--sage); }
+    .add-form input[name="aname"] { flex: 1 1 180px; }
+    .add-form input[name="atable"] { width: 110px; }
+
+    .btn-add {
+      background: var(--sage);
+      color: white;
+      border: none;
+      border-radius: 7px;
+      padding: 0.5rem 1rem;
+      font-family: "Montserrat", sans-serif; font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-add:hover { background: var(--sage-dk); }
+
+    /* Guest rows */
+    .guest-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid var(--border);
+      font-family: "Montserrat", sans-serif; font-weight: 600;
+      font-size: 0.88rem;
+    }
+    .guest-row:last-child { border-bottom: none; }
+
+    .guest-row .g-name { flex: 1; color: var(--text); }
+
+    .guest-row .g-table {
+      background: var(--sage-lt);
+      color: var(--sage-dk);
+      border-radius: 5px;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+
+    .btn-del {
+      background: none;
+      border: none;
+      color: #ccc;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0.1rem 0.25rem;
+      transition: color 0.15s;
+    }
+    .btn-del:hover { color: var(--red); }
+
+    .admin-footer {
+      padding: 0.75rem 1.25rem;
+      border-top: 1.5px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .btn-save {
+      background: var(--sage-dk);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.6rem 1.4rem;
+      font-family: "Cormorant", serif; font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    .btn-save:hover { background: #3a5c3e; }
+
+    .save-msg {
+      font-family: "Montserrat", sans-serif; font-weight: 600;
+      font-size: 0.82rem;
+      color: var(--sage);
+      align-self: center;
+      margin-right: auto;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .save-msg.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="names">
+    Alec <span class="ampersand">&amp;</span> Clarice
+  </div>
+  <div class="date-line">June 30, 2026 &nbsp;·&nbsp; Heritage Estate &amp; Winery</div>
+</header>
+
+<main>
+  <div class="search-wrap">
+    <input
+      id="search"
+      type="text"
+      autocomplete="off"
+      autocorrect="off"
+      autocapitalize="off"
+      spellcheck="false"
+      placeholder="Search your name…"
+      aria-label="Search for your name"
+    />
+    <button class="clear-btn" id="clearBtn" aria-label="Clear search">✕</button>
+  </div>
+  <p class="hint">Type your first or last name to find your table.</p>
+  <div id="results" role="region" aria-live="polite"></div>
+</main>
+
+<footer>Find your seat &amp; celebrate!</footer>
+
+<!-- Admin toggle (gear icon, bottom-right) -->
+<button id="admin-toggle" title="Edit guest list">⚙</button>
+
+<!-- Admin panel -->
+<div id="admin-panel" role="dialog" aria-modal="true" aria-label="Edit guest list">
+  <div class="admin-box">
+    <div class="admin-header">
+      <h2>Edit Guest List</h2>
+      <button class="admin-close" id="adminClose" aria-label="Close">✕</button>
+    </div>
+
+    <div class="admin-body">
+      <form class="add-form" id="addForm" autocomplete="off">
+        <input name="aname"  type="text" placeholder="Guest name (e.g. Jane Smith)" required />
+        <input name="atable" type="text" placeholder="Table (e.g. 4)" required />
+        <button type="submit" class="btn-add">+ Add</button>
+      </form>
+      <div id="guestRows"></div>
+    </div>
+
+    <div class="admin-footer">
+      <span class="save-msg" id="saveMsg">Saved!</span>
+      <button class="btn-save" id="saveBtn">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ─── Default guest list (used only on first load) ─────────
+const DEFAULT_GUESTS = [
+  { name: "Emily Johnson",           table: "Head Table" },
+  { name: "Alec Calvo",          table: "Head Table" },
+  { name: "Cora Garces",  table: "1" },
+  { name: "Robert & Susan Williams", table: "1" },
+  { name: "Aunt Carol Johnson",      table: "2" },
+  { name: "Uncle Dave Johnson",      table: "2" },
+  { name: "Lily Williams",           table: "2" },
+  { name: "Noah Williams",           table: "2" },
+  { name: "Sarah & Mike Chen",       table: "3" },
+  { name: "Priya Patel",             table: "3" },
+  { name: "Jordan Kim",              table: "3" },
+  { name: "Alex Rivera",             table: "4" },
+  { name: "Morgan Taylor",           table: "4" },
+  { name: "Sam & Dana Brooks",       table: "4" },
+  { name: "Casey Murphy",            table: "5" },
+  { name: "Riley Nguyen",            table: "5" },
+  { name: "Quinn & Avery Ortiz",     table: "5" },
+  { name: "Drew Patterson",          table: "6" },
+  { name: "Jamie Flores",            table: "6" },
+  { name: "Chris & Taylor Evans",    table: "6" },
+];
+
+// ─── Persistence via localStorage ────────────────────────
+const STORAGE_KEY = 'wedding_guests_v1';
+
+function loadGuests() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return DEFAULT_GUESTS.map(g => ({ ...g }));
+}
+
+function saveGuests(list) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+}
+
+let GUESTS = loadGuests();
+
+// ─── Search ───────────────────────────────────────────────
+const searchEl  = document.getElementById('search');
+const clearBtn  = document.getElementById('clearBtn');
+const resultsEl = document.getElementById('results');
+
+function normalize(str) {
+  return str.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function escRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function highlight(text, query) {
+  if (!query) return escHtml(text);
+  const escaped = escHtml(text);
+  const pattern = new RegExp(`(${escRegex(escHtml(query))})`, 'gi');
+  return escaped.replace(pattern, '<em>$1</em>');
+}
+
+function render(query) {
+  const q = normalize(query);
+  if (!q) { resultsEl.innerHTML = ''; return; }
+
+  const matches = GUESTS.filter(g => normalize(g.name).includes(q));
+
+  if (matches.length === 0) {
+    resultsEl.innerHTML = `<p class="no-result">No guest found for <strong>"${escHtml(query)}"</strong>.<br>Try a different spelling or ask a coordinator.</p>`;
+    return;
+  }
+
+  resultsEl.innerHTML = matches.map(g => `
+    <div class="result-card">
+      <span class="result-name">${highlight(g.name, query)}</span>
+      <div class="result-table">TABLE<strong>${escHtml(g.table)}</strong></div>
+    </div>
+  `).join('');
+}
+
+searchEl.addEventListener('input', () => {
+  const val = searchEl.value;
+  clearBtn.classList.toggle('visible', val.length > 0);
+  render(val);
+});
+
+clearBtn.addEventListener('click', () => {
+  searchEl.value = '';
+  clearBtn.classList.remove('visible');
+  resultsEl.innerHTML = '';
+  searchEl.focus();
+});
+
+searchEl.focus();
+
+// ─── Admin panel ──────────────────────────────────────────
+const adminPanel  = document.getElementById('admin-panel');
+const adminToggle = document.getElementById('admin-toggle');
+const adminClose  = document.getElementById('adminClose');
+const guestRows   = document.getElementById('guestRows');
+const addForm     = document.getElementById('addForm');
+const saveBtn     = document.getElementById('saveBtn');
+const saveMsg     = document.getElementById('saveMsg');
+
+function openAdmin() {
+  renderRows();
+  adminPanel.classList.add('open');
+  adminPanel.querySelector('input').focus();
+}
+
+function closeAdmin() {
+  adminPanel.classList.remove('open');
+  searchEl.focus();
+}
+
+adminToggle.addEventListener('click', openAdmin);
+adminClose.addEventListener('click', closeAdmin);
+adminPanel.addEventListener('click', e => { if (e.target === adminPanel) closeAdmin(); });
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && adminPanel.classList.contains('open')) closeAdmin();
+});
+
+function renderRows() {
+  guestRows.innerHTML = GUESTS.map((g, i) => `
+    <div class="guest-row">
+      <span class="g-name">${escHtml(g.name)}</span>
+      <span class="g-table">Table ${escHtml(g.table)}</span>
+      <button class="btn-del" data-i="${i}" title="Remove">✕</button>
+    </div>
+  `).join('');
+
+  guestRows.querySelectorAll('.btn-del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = parseInt(btn.dataset.i, 10);
+      GUESTS.splice(i, 1);
+      renderRows();
+    });
+  });
+}
+
+addForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const name  = addForm.aname.value.trim();
+  const table = addForm.atable.value.trim();
+  if (!name || !table) return;
+  GUESTS.push({ name, table });
+  addForm.reset();
+  addForm.aname.focus();
+  renderRows();
+});
+
+saveBtn.addEventListener('click', () => {
+  saveGuests(GUESTS);
+  render(searchEl.value);
+  saveMsg.classList.add('show');
+  setTimeout(() => saveMsg.classList.remove('show'), 2000);
+});
+</script>
+
+</body>
+</html>
