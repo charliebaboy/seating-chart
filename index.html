@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Wedding Seating Chart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kaisei+Deco&display=swap" rel="stylesheet">
   <style>
     :root {
       --cream:   #fafaf7;
@@ -49,11 +50,37 @@
 
     header .date-line {
       margin-top: 0.4rem;
+      padding: 20px 0;
       font-size: 0.95rem;
       color: var(--muted);
       letter-spacing: 0.12em;
       text-transform: uppercase;
       font-family: "Cormorant", serif; font-weight: 600;
+    }
+
+    header .venue-line {
+      margin-top: 0.25rem;
+      font-size: 0.95rem;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-family: "Cormorant", serif; font-weight: 600;
+    }
+
+    /* meta row: date + separator + venue */
+    .meta-row { text-align: center; }
+    .meta-sep { display: none; }
+
+    /* Apply Kaisei Deco to numeric / table elements */
+    header .date-line, .result-table strong, .guest-row .g-table, .add-form input[name="atable"] {
+      font-family: 'Kaisei Deco', serif;
+      font-weight: 300;
+    }
+
+    @media (min-width: 700px) {
+      .meta-row { display: flex; align-items: center; justify-content: center; gap: 0.6rem; padding-top: 30px; }
+      .meta-sep { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+      header .date-line, header .venue-line { margin-top: 0; padding: 0; }
     }
 
     main {
@@ -62,7 +89,7 @@
       padding: 2.5rem 1.25rem 4rem;
     }
 
-    .search-wrap { position: relative; margin-bottom: 0.75rem; }
+    .search-wrap { position: relative; width: 80%; margin: 0 auto 0.75rem; }
 
     #search {
       width: 100%;
@@ -70,7 +97,7 @@
       font-size: 1.05rem;
       font-family: "Montserrat", sans-serif; font-weight: 600;
       border: 2px solid var(--sage-lt);
-      border-radius: 8px;
+      border-radius: 9999px;
       background: white;
       color: var(--text);
       outline: none;
@@ -101,6 +128,7 @@
       color: var(--muted);
       font-family: "Montserrat", sans-serif; font-weight: 600;
       margin-bottom: 1.75rem;
+      text-align: center;
     }
 
     #results { display: flex; flex-direction: column; gap: 0.75rem; }
@@ -351,7 +379,11 @@
   <div class="names">
     Alec <span class="ampersand">&amp;</span> Clarice
   </div>
-  <div class="date-line">June 30, 2026 &nbsp;·&nbsp; Heritage Estate &amp; Winery</div>
+  <div class="meta-row">
+    <div class="date-line">June 30, 2026</div>
+    <div class="meta-sep" aria-hidden="true"></div>
+    <div class="venue-line">Heritage Estate &amp; Winery</div>
+  </div>
 </header>
 
 <main>
@@ -452,6 +484,7 @@ const DEFAULT_GUESTS = [
   { name: "Jaya Martinez-Habashi & Daniel Habashi",    table: "10" },
   { name: "Mcrae & Hannah Pinto",    table: "10" },
   { name: "Shantelle Rosales",    table: "10" },
+  { name: "Igraine Carbonell",    table: "10" },
   { name: "Candace Sheriffe",    table: "11" },
   { name: "Kiranpreet	Bhangu",    table: "11" },
   { name: "Chamila De Zoysa & Alex Castellanos",    table: "11" },
